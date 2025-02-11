@@ -33,8 +33,29 @@ def scrape_minecraft_schematic_ids():
     return ids
     
 def scrape_minecraft_schematics(ids):
-    for schematic_id in tqdm.tqdm(ids):
-        r = requests.get(f'https://www.minecraft-schematics.com/schematic/{schematic_id}/')
+    # Use 'with' to ensure the session context is closed after use.
+    # Fill in your details here to be posted to the login form.
+    with open('web_scraper/minecraft_schematica_login_data.txt', 'r') as f:
+        lines = f.readlines()
+        payload = {
+            'email_state': 'good',
+            'password_state': 'good',
+            'email': lines[0],
+            'password': lines[1]
+        }
+
+    with requests.Session() as s:
+        p = s.post('https://www.minecraft-schematics.com/login/action/', data=payload)
+        for schematic_id in tqdm.tqdm(ids):
+            # print the HTML returned or something more intelligent to see if it's a successful login page.
+            print(p.text)
+
+            # An authorised request.
+            r = s.get(f'https://www.minecraft-schematics.com/schematic/24003/download/action/?type=schematic', allow_redirects=True)
+            print(r.text)
+
+
+
 
 if __name__ == '__main__':
     site = 'minecraft-schematics.com'
